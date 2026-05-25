@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import duckdb
+import gdown
 import joblib
 import numpy as np
 import os
 import pandas as pd
+import zipfile
 
 # ============================================================
 # APP CONFIG
@@ -14,6 +16,30 @@ app = FastAPI(title="Recommendation Engine API", version="1.0")
 
 MODEL_PATH = "phase2_lgbm_v3.pkl"
 TABLE_DIR = "recommender_api_tables"
+
+MODEL_URL = "https://drive.google.com/file/d/1a5tyqk_b_p0KFemSm-CKupd80p8cz0LP/view?usp=sharing"
+TABLES_URL = "https://drive.google.com/file/d/1yfNQZzUddWMikFkIUHFcqZtnuZUyaaoE/view?usp=sharing"
+
+# ============================================================
+# DOWNLOAD MODEL + TABLES
+# ============================================================
+
+def download_artifacts():
+    if not os.path.exists(MODEL_PATH):
+        print("Downloading model...")
+        gdown.download(MODEL_URL, MODEL_PATH, fuzzy=True, quiet=False)
+
+    if not os.path.exists(TABLE_DIR):
+        print("Downloading parquet tables...")
+        zip_path = "recommender_api_tables.zip"
+
+        gdown.download(TABLES_URL, zip_path, fuzzy=True, quiet=False)
+
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(".")
+
+
+download_artifacts()
 
 # ============================================================
 # LOAD MODEL + DUCKDB TABLES
